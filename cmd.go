@@ -16,7 +16,7 @@ func main() {
 	//注册
 	r.POST("/user/register", user.Register)
 	//登录
-	r.GET("/user/token", user.Login)
+	r.GET("/user/login", user.Login)
 	//刷新token
 	r.GET("/user/token/refresh", user.RefreshToken)
 	//修改用户信息
@@ -45,6 +45,8 @@ func main() {
 	r.POST("/operate/order", order.PlaceOrder)
 	//删除订单
 	r.DELETE("/operate/order/:order_id", order.DeleteOrder)
+	//查看订单详情
+	r.GET("/operate/order/get/:order_id", order.GetOrder)
 
 	r.Run(":8080")
 }

@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/patrickmn/go-cache"
+	"time"
 )
 
 type Product struct {
@@ -19,8 +21,18 @@ type Product struct {
 	Link        string `json:"link"`
 }
 
+func init() {
+	//创建缓存实例，设置默认过期时间和清理时间
+	c = cache.New(5*time.Minute, 10*time.Minute)
+}
+
 // SearchWithoutToken 没有token的搜索逻辑
 func SearchWithoutToken(c *gin.Context, productName string) {
+	cacheKey := fmt.Sprintf("search_without_token_%s", productName)
+	if value, found := c.Get(cacheKey); found {
+		c.JSON(200, value)
+		return
+	}
 	db, err := sql.Open("mysql", "root:xkw510724@tcp(127.0.0.1:3306)/redrock_ecommerce?charset=utf8")
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -65,12 +77,14 @@ func SearchWithoutToken(c *gin.Context, productName string) {
 		}
 		products = append(products, product)
 	}
-	c.JSON(200, gin.H{
+	result := gin.H{
 		"status": 10000,
 		"info":   "success",
 		"data": map[string][]Product{
 			"products": products,
 		},
-	})
+	}
+	c.Set(cacheKey, result)
+	c.JSON(200, result)
 
 }

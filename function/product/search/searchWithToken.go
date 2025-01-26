@@ -2,11 +2,19 @@ package search
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
 // SearchWithToken 有token的搜索逻辑
 func SearchWithToken(c *gin.Context, productName, token string) {
+
+	cacheKey := fmt.Sprintf("search_with_token_%s_%s", productName, token)
+	if value, found := c.Get(cacheKey); found {
+		c.JSON(200, value)
+		return
+	}
+
 	db, err := sql.Open("mysql", "root:xkw510724@tcp(127.0.0.1:3306)/redrock_ecommerce?charset=utf8")
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -67,12 +75,14 @@ func SearchWithToken(c *gin.Context, productName, token string) {
 
 	}
 
-	c.JSON(200, gin.H{
+	result := gin.H{
 		"status": 10000,
 		"info":   "success",
 		"data": map[string][]Product{
 			"products": products,
 		},
-	})
+	}
+	c.Set(cacheKey, result)
+	c.JSON(200, result)
 
 }

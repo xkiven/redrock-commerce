@@ -2,7 +2,16 @@ package search
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/patrickmn/go-cache"
+	"time"
 )
+
+var c *cache.Cache
+
+func init() {
+	//创建缓存实例，设置默认过期时间和清理时间
+	c = cache.New(5*time.Minute, 10*time.Minute)
+}
 
 func SearchProduct(c *gin.Context) {
 	productName := c.Query("product_name")
